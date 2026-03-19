@@ -2,7 +2,7 @@ app = "readandsign"
 primary_region = "fra"
 
 [build]
-dockerfile = "Dockerfile.fly"
+dockerfile = "app/Dockerfile.fly"
 
 [env]
 NODE_ENV = "production"
