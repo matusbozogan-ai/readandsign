@@ -1,0 +1,8 @@
+app = "readandsign"
+primary_region = "fra"
+
+[build]
+dockerfile = "Dockerfile.fly"
+
+[env]
+NODE_ENV = "production"
