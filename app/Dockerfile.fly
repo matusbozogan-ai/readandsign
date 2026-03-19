@@ -1,0 +1,11 @@
+FROM docker:dind
+
+RUN apk add --no-cache docker-compose bash curl
+
+WORKDIR /app
+
+COPY . .
+
+EXPOSE 80 3000 5432
+
+CMD ["docker-compose", "-f", "docker-compose.render.yml", "up"]
