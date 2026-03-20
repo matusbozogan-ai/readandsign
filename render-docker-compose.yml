@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-readandsign}
+      POSTGRES_USER: ${DB_USER:-ras}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ras} -d ${DB_NAME:-readandsign}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ${BACKEND_IMAGE:-matuskobozo/readandsign-backend:prod}
+    restart: unless-stopped
+    environment:
+      PORT: "3000"
+      NODE_ENV: production
+      DATABASE_URL: postgres://${DB_USER:-ras}:${DB_PASSWORD}@db:5432/${DB_NAME:-readandsign}
+      JWT_SECRET: ${JWT_SECRET}
+      SIGNING_SECRET: ${SIGNING_SECRET}
+      UPLOAD_DIR: /app/uploads
+      SEED: "false"
+      APP_URL: ${APP_URL}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-noreply@yourdomain.com}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-matuskobozo/readandsign-frontend:prod}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  uploads:

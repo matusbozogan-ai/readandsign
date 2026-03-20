@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: readandsign
+      POSTGRES_USER: ras
+      POSTGRES_PASSWORD: ras_secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ras -d readandsign"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: readandsign-backend:latest
+    restart: unless-stopped
+    environment:
+      PORT: "3000"
+      NODE_ENV: production
+      DATABASE_URL: postgres://ras:ras_secret@db:5432/readandsign
+      JWT_SECRET: "change-me-to-a-long-random-secret-32chars+"
+      SIGNING_SECRET: "change-me-to-another-long-random-secret"
+      UPLOAD_DIR: /app/uploads
+      SEED: "false"
+      APP_URL: "http://192.168.0.245:8889"
+      SMTP_HOST: ""
+      SMTP_PORT: "587"
+      SMTP_USER: ""
+      SMTP_PASS: ""
+      SMTP_FROM: "noreply@yourdomain.com"
+      SMTP_SECURE: "false"
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: readandsign-frontend:latest
+    restart: unless-stopped
+    ports:
+      - "8889:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  uploads:

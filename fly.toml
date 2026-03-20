@@ -2,7 +2,21 @@ app = "readandsign"
 primary_region = "fra"
 
 [build]
-dockerfile = "app/Dockerfile.fly"
+image = "matuskobozo/readandsign-backend:prod"
 
 [env]
 NODE_ENV = "production"
+PORT = "3000"
+
+[[services]]
+protocol = "tcp"
+internal_port = 3000
+processes = ["app"]
+
+  [[services.ports]]
+  port = 80
+  handlers = ["http"]
+
+  [[services.ports]]
+  port = 443
+  handlers = ["tls", "http"]
