@@ -3,7 +3,9 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+# Delete lock file so npm re-resolves packages for the target platform (x64 Linux)
+# instead of using ARM64-locked entries from the Mac-generated package-lock.json
+RUN rm -f package-lock.json && npm install
 
 COPY . .
 RUN npm run build
@@ -16,7 +18,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --production
+RUN rm -f package-lock.json && npm install --omit=dev
 
 COPY --from=builder /app/dist ./dist
 
