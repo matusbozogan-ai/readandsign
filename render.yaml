@@ -3,6 +3,8 @@ services:
     name: readandsign-backend
     runtime: docker
     plan: free
+    dockerfilePath: app/backend/Dockerfile
+    dockerContext: app/backend
     healthCheckPath: /health
     envVars:
       - key: PORT
@@ -24,6 +26,8 @@ services:
     name: readandsign-frontend
     runtime: docker
     plan: free
+    dockerfilePath: app/frontend/Dockerfile
+    dockerContext: app/frontend
     envVars:
       - key: BACKEND_URL
         value: https://readandsign-backend.onrender.com
