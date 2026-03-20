@@ -3,9 +3,11 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-# Delete lock file so npm re-resolves packages for the target platform (x64 Linux)
-# instead of using ARM64-locked entries from the Mac-generated package-lock.json
-RUN rm -f package-lock.json && npm install
+# Remove ARM64-only devDependency that exists for Mac local dev but breaks x64 Linux builds
+# then install normally — no lock file needed in Docker
+RUN rm -f package-lock.json \
+    && npm pkg delete devDependencies['@embedded-postgres/linux-arm64'] \
+    && npm install
 
 COPY . .
 RUN npm run build
@@ -18,7 +20,9 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY package*.json ./
-RUN rm -f package-lock.json && npm install --omit=dev
+RUN rm -f package-lock.json \
+    && npm pkg delete devDependencies['@embedded-postgres/linux-arm64'] \
+    && npm install --omit=dev
 
 COPY --from=builder /app/dist ./dist
 
