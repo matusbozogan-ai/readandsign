@@ -28,9 +28,9 @@ services:
       - key: BACKEND_URL
         value: https://readandsign-backend.onrender.com
 
-  - type: pserv
-    name: readandsign-db
+databases:
+  - name: readandsign-db
     plan: free
-    ipAllowList: []
-    postgreSQL:
-      version: 16
+    databaseName: readandsign
+    user: readandsign
+    postgresMajorVersion: 16
