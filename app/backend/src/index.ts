@@ -37,13 +37,12 @@ async function start() {
     process.exit(1)
   }
 
-  if (process.env.SEED === 'true') {
-    try {
-      const { seedDatabase } = await import('./seed')
-      await seedDatabase()
-    } catch (err) {
-      console.error('Failed to seed database:', err)
-    }
+  // Always run seed — idempotent (checks for existing data before inserting)
+  try {
+    const { seedDatabase } = await import('./seed')
+    await seedDatabase()
+  } catch (err) {
+    console.error('Failed to seed database:', err)
   }
 
   // Always run PDF repair on startup to fix any corrupt seed files from older versions
